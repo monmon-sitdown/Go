@@ -11,7 +11,7 @@ import (
 
 const (
 	MINING_DIFFICULTY = 3
-	MINING_SENDER     = "THE BC"
+	MINING_SENDER     = "THE Blockchain"
 	MINING_REWARD     = 1.0
 )
 
