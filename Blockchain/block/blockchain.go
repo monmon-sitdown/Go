@@ -27,6 +27,7 @@ type Blockchain struct {
 	transactionPool []*Transaction
 	chain           []*Block
 	bcAddr          string
+	port            uint16
 }
 type Transaction struct {
 	senderAddr   string
@@ -61,10 +62,11 @@ func (b *Block) Print() {
 	}
 }
 
-func NewBlockChain(bcAddr string) *Blockchain {
+func NewBlockChain(bcAddr string, port uint16) *Blockchain {
 	b := &Block{}
 	bc := new(Blockchain)
 	bc.bcAddr = bcAddr
+	bc.port = port
 	bc.CreateBlock(0, b.Hash())
 	return bc
 }
@@ -181,6 +183,13 @@ func (t *Transaction) MarshalJSON() ([]byte, error) {
 		Sender:   t.senderAddr,
 		Receiver: t.receiverAddr,
 		Value:    t.value,
+	})
+}
+func (bc *Blockchain) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Blocks []*Block `json:"chains"`
+	}{
+		Blocks: bc.chain,
 	})
 }
 
