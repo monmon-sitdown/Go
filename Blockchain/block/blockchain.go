@@ -1,6 +1,8 @@
 package block
 
 import (
+	"Blockchain/utils"
+	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -67,9 +69,21 @@ func NewBlockChain(bcAddr string) *Blockchain {
 	return bc
 }
 
-func (bc *Blockchain) AddTransaction(sender, receiver string, value float32) {
+func (bc *Blockchain) AddTransaction(sender, receiver string, value float32, senderPublicKey *ecdsa.PublicKey, s *utils.Signature) bool {
 	t := NewTransaction(sender, receiver, value)
-	bc.transactionPool = append(bc.transactionPool, t)
+
+	if sender == MINING_SENDER {
+		bc.transactionPool = append(bc.transactionPool, t)
+		return true
+	}
+
+	if bc.VerifyTransactionSignature(senderPublicKey, s, t) {
+		bc.transactionPool = append(bc.transactionPool, t)
+		return true
+	} else {
+		log.Println("ERROR : Verify Transaction")
+	}
+	return false
 }
 
 func (bc *Blockchain) CalculateTotalAmount(bcAddr string) float32 {
@@ -99,7 +113,7 @@ func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 }
 
 func (bc *Blockchain) Mining() bool {
-	bc.AddTransaction(MINING_SENDER, bc.bcAddr, MINING_REWARD)
+	bc.AddTransaction(MINING_SENDER, bc.bcAddr, MINING_REWARD, nil, nil)
 	nonce := bc.ProofOfWork()
 	preHash := bc.LastBlock().Hash()
 	bc.CreateBlock(nonce, preHash)
@@ -112,6 +126,13 @@ func (bc *Blockchain) ValidProof(nonce int, preHash [32]byte, transactions []*Tr
 	guessBlock := Block{nonce, preHash, 0, transactions}
 	guessHashStr := fmt.Sprintf("%x", guessBlock.Hash())
 	return guessHashStr[:difficulty] == zeros
+}
+
+func (bc *Blockchain) VerifyTransactionSignature(senderPublicKey *ecdsa.PublicKey, s *utils.Signature, t *Transaction) bool {
+	m, _ := json.Marshal(t)
+	h := sha256.Sum256([]byte(m))
+
+	return ecdsa.Verify(senderPublicKey, h[:], s.R, s.S)
 }
 
 func (bc *Blockchain) ProofOfWork() int {
@@ -149,13 +170,13 @@ func NewTransaction(sender, receiver string, value float32) *Transaction {
 
 func (t *Transaction) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		SenderAddr   string  `json:"sender_addr"`
-		ReceiverAddr string  `json:"receiver_addr"`
-		Value        float32 `json:"value"`
+		Sender   string  `json:"sender_addr"`
+		Receiver string  `json:"receiver_addr"`
+		Value    float32 `json:"value"`
 	}{
-		SenderAddr:   t.senderAddr,
-		ReceiverAddr: t.receiverAddr,
-		Value:        t.value,
+		Sender:   t.senderAddr,
+		Receiver: t.receiverAddr,
+		Value:    t.value,
 	})
 }
 

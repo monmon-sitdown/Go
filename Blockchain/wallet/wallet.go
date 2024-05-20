@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"Blockchain/utils"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -9,7 +10,6 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	"golang.org/x/crypto/ripemd160"
-	"math/big"
 )
 
 type Wallet struct {
@@ -23,10 +23,6 @@ type Transaction struct {
 	senderBCAddr     string
 	receiverBCAddr   string
 	value            float32
-}
-type Signature struct {
-	R *big.Int
-	S *big.Int
 }
 
 func NewWallet() *Wallet {
@@ -92,25 +88,26 @@ func NewTransaction(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, se
 	return &Transaction{privateKey, publicKey, sender, receiver, value}
 }
 
-func (t *Transaction) GenerateSignature() *Signature {
+func (t *Transaction) GenerateSignature() *utils.Signature {
 	m, _ := json.Marshal(t)
 	h := sha256.Sum256([]byte(m))
-	r, s, _ := ecdsa.Sign(rand.Reader, t.senderPrivateKey, h[:])
-	return &Signature{r, s}
+	r, s, err := ecdsa.Sign(rand.Reader, t.senderPrivateKey, h[:])
+	if err != nil {
+		fmt.Println("Error signing message:", err)
+	}
+	sign := utils.Signature{R: r, S: s}
+
+	return &sign
 }
 
 func (t *Transaction) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Sender   string  `json:"sender_blockchain_address"`
-		Receiver string  `json:"receiver_blockchain_address"`
+		Sender   string  `json:"sender_addr"`
+		Receiver string  `json:"receiver_addr"`
 		Value    float32 `json:"value"`
 	}{
 		Sender:   t.senderBCAddr,
 		Receiver: t.receiverBCAddr,
 		Value:    t.value,
 	})
-}
-
-func (s *Signature) String() string {
-	return fmt.Sprintf("%x%x", s.R, s.S)
 }
