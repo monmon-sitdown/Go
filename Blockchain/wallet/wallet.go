@@ -111,3 +111,14 @@ func (t *Transaction) MarshalJSON() ([]byte, error) {
 		Value:    t.value,
 	})
 }
+func (w *Wallet) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PrivateKey string `json:"private_key"`
+		PublicKey  string `json:"public_key"`
+		BcAddr     string `json:"blockchain_address"`
+	}{
+		PrivateKey: w.PrivateKeyStr(),
+		PublicKey:  w.PublicKeyStr(),
+		BcAddr:     w.BlockchainAddress(),
+	})
+}
