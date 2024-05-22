@@ -34,6 +34,13 @@ type Transaction struct {
 	receiverAddr string
 	value        float32
 }
+type TransactionRequest struct {
+	SenderBlockchainAddress   *string  `json:"sender_blockchain_address"`
+	ReceiverBlockchainAddress *string  `json:"receiver_blockchain_address"`
+	SenderPublicKey           *string  `json:"sender_public_key"`
+	Value                     *float32 `json:"value"`
+	Signature                 *string  `json:"signature"`
+}
 
 func NewBlock(nonce int, preHash [32]byte, transactions []*Transaction) *Block {
 	b := new(Block)
@@ -172,6 +179,17 @@ func (bc *Blockchain) Print() {
 
 func NewTransaction(sender, receiver string, value float32) *Transaction {
 	return &Transaction{sender, receiver, value}
+}
+
+func (tr *TransactionRequest) Validate() bool {
+	if tr.SenderBlockchainAddress == nil ||
+		tr.ReceiverBlockchainAddress == nil ||
+		tr.SenderPublicKey == nil ||
+		tr.Value == nil ||
+		tr.Signature == nil {
+		return false
+	}
+	return true
 }
 
 func (t *Transaction) MarshalJSON() ([]byte, error) {
