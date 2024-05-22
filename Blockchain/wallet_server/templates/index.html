@@ -19,6 +19,41 @@
                     console.error(error)
                 }
             })
+
+            // 发送交易
+            $('#send_money_button').click(function() {
+                var recipientAddress = $('#receiver_blockchain_address').val();
+                var amount = $('#send_amount').val();
+                var senderprivate = $('#private_key').val();
+                var senderpublic = $('#public_key').val();
+                var blockchainaddress =  $('#blockchain_address').val()
+
+                if (recipientAddress === "" || amount === "") {
+                    alert("Please fill in all fields");
+                    return;
+                }
+
+                var transactionData = {
+                    sender_private_key: senderprivate,
+                    sender_blockchain_address: blockchainaddress,
+                    sender_public_key:senderpublic,
+                    receiver_blockchain_address: recipientAddress,
+                    value: amount
+                };
+
+                $.ajax({
+                    url: './transaction',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(transactionData),
+                    success: function(response) {
+                        alert('Transaction successful: ' + response);
+                    },
+                    error: function(error) {
+                        alert('Transaction failed: ' + error.responseText);
+                    }
+                });
+            });
         })
     </script>
 </head>
@@ -41,7 +76,7 @@
     <div>
         <h1>Send Money</h1>
         <div>
-            Address : <input id = "recipient_blockchain_address" size="100" type="text">
+            Address : <input id = "receiver_blockchain_address" size="100" type="text">
             <br>
             Amount:<input id="send_amount" type="text">
             <br>

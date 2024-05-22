@@ -88,7 +88,7 @@ func (w *Wallet) PublicKey() *ecdsa.PublicKey {
 }
 
 func (w *Wallet) PublicKeyStr() string {
-	return fmt.Sprintf("%x%x", w.publicKey.X.Bytes(), w.publicKey.Y.Bytes())
+	return fmt.Sprintf("%064x%064x", w.publicKey.X.Bytes(), w.publicKey.Y.Bytes())
 }
 
 func NewTransaction(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, sender, receiver string, value float32) *Transaction {
@@ -109,6 +109,21 @@ func (t *Transaction) GenerateSignature() *utils.Signature {
 
 func (tr *TransactionRequest) Validate() bool {
 	if tr.SenderPrivateKey == nil || tr.SenderBlockchainAddress == nil || tr.ReceiverBlockchainAddress == nil || tr.SenderPublicKey == nil || tr.Value == nil {
+		/*if tr.SenderPublicKey == nil {
+			log.Println("SenderPublickeKey")
+		}
+		if tr.SenderBlockchainAddress == nil {
+			log.Println("SenderBlockchainAddress")
+		}
+		if tr.ReceiverBlockchainAddress == nil {
+			log.Println("ReceiverBlockchainAddress")
+		}
+		if tr.SenderPrivateKey == nil {
+			log.Println("Senderprivate")
+		}
+		if tr.Value == nil {
+			log.Println("Value")
+		}*/
 		return false
 	}
 	return true

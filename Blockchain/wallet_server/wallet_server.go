@@ -1,8 +1,10 @@
 package main
 
 import (
+	"Blockchain/utils"
 	"Blockchain/wallet"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -80,6 +82,20 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 			return
 		}
 
+		publicKey := utils.PublicKeyFromString(*t.SenderPublicKey)
+		privateKey := utils.PrivateKeyFromString(*t.SenderPrivateKey, publicKey)
+		value, err := strconv.ParseFloat(*t.Value, 32)
+		if err != nil {
+			log.Println("ERROR:parse error")
+			io.WriteString(w, string(utils.JsonStatus("fail")))
+			return
+		}
+		value32 := float32(value)
+
+		fmt.Println(publicKey)
+		fmt.Println(privateKey)
+		fmt.Printf("%.1f\n", value32)
+
 		/*fmt.Println(*t.SenderPublicKey)
 		fmt.Println(*t.SenderBlockchainAddress)
 		fmt.Println(*t.SenderPrivateKey)
@@ -94,5 +110,6 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 func (ws *WalletServer) Run() {
 	http.HandleFunc("/", ws.Index)
 	http.HandleFunc("/wallet", ws.Wallet)
+	http.HandleFunc("/transaction", ws.CreateTransaction)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(ws.Port())), nil))
 }
