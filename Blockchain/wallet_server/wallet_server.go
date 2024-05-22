@@ -74,21 +74,21 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 		err := decoder.Decode(&t)
 		if err != nil {
 			log.Printf("ERROR:%v", err)
-			io.WriteString(w, string(utils.JsonStatus("fail")))
+			io.WriteString(w, string(utils.JsonStatus("wallet CreateTransaction Post decode fail")))
 			return
 		}
 		if !t.Validate() {
 			log.Println("ERROR: missing fields")
-			io.WriteString(w, string(utils.JsonStatus("fail")))
+			io.WriteString(w, string(utils.JsonStatus("wallet CreateTransaction post validate fail")))
 			return
 		}
 
 		publicKey := utils.PublicKeyFromString(*t.SenderPublicKey)
 		privateKey := utils.PrivateKeyFromString(*t.SenderPrivateKey, publicKey)
-		value, err := strconv.ParseFloat(*t.Value, 32)
-		if err != nil {
+		value, err1 := strconv.ParseFloat(*t.Value, 32)
+		if err1 != nil {
 			log.Println("ERROR:parse error")
-			io.WriteString(w, string(utils.JsonStatus("fail")))
+			io.WriteString(w, string(utils.JsonStatus("wallet CreateTrans value parse fail")))
 			return
 		}
 		value32 := float32(value)
@@ -110,8 +110,10 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 		resp, _ := http.Post(ws.Gateway()+"/transactions", "application/json", buf)
 		if resp.StatusCode == 201 {
 			io.WriteString(w, string(utils.JsonStatus("success")))
+		} else {
+			io.WriteString(w, string(utils.JsonStatus("resp code 201 fail")))
 		}
-		io.WriteString(w, string(utils.JsonStatus("fail")))
+
 		/*fmt.Println(publicKey)
 		fmt.Println(privateKey)
 		fmt.Printf("%.1f\n", value32)*/

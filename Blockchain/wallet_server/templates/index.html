@@ -47,10 +47,6 @@
                     contentType: 'application/json',
                     data: JSON.stringify(transactionData),
                     success: function(response) {
-                        if ($.parseJSON(response).message === 'fail') {
-                            alert("parse failed")
-                            return
-                        }
                         alert('Transaction successful: ' + response);
                     },
                     error: function(error) {

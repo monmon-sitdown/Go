@@ -131,8 +131,8 @@ func (tr *TransactionRequest) Validate() bool {
 
 func (t *Transaction) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Sender   string  `json:"sender_addr"`
-		Receiver string  `json:"receiver_addr"`
+		Sender   string  `json:"sender_blockchain_address"`
+		Receiver string  `json:"receiver_blockchain_address"`
 		Value    float32 `json:"value"`
 	}{
 		Sender:   t.senderBCAddr,

@@ -78,6 +78,15 @@ func NewBlockChain(bcAddr string, port uint16) *Blockchain {
 	return bc
 }
 
+func (bc *Blockchain) TransactionPool() []*Transaction {
+	return bc.transactionPool
+}
+
+func (bc *Blockchain) CreateTransaction(sender, receiver string, value float32, senderPublicKey *ecdsa.PublicKey, s *utils.Signature) bool {
+	isTransacted := bc.AddTransaction(sender, receiver, value, senderPublicKey, s)
+	return isTransacted
+}
+
 func (bc *Blockchain) AddTransaction(sender, receiver string, value float32, senderPublicKey *ecdsa.PublicKey, s *utils.Signature) bool {
 	t := NewTransaction(sender, receiver, value)
 
@@ -87,10 +96,10 @@ func (bc *Blockchain) AddTransaction(sender, receiver string, value float32, sen
 	}
 
 	if bc.VerifyTransactionSignature(senderPublicKey, s, t) {
-		if bc.CalculateTotalAmount(sender) < value {
+		/*if bc.CalculateTotalAmount(sender) < value {
 			log.Println("Errror: Not enough Money")
 			return false
-		}
+		}*/
 		bc.transactionPool = append(bc.transactionPool, t)
 		return true
 	} else {
@@ -194,8 +203,8 @@ func (tr *TransactionRequest) Validate() bool {
 
 func (t *Transaction) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Sender   string  `json:"sender_addr"`
-		Receiver string  `json:"receiver_addr"`
+		Sender   string  `json:"sender_blockchain_address"`
+		Receiver string  `json:"receiver_blockchain_address"`
 		Value    float32 `json:"value"`
 	}{
 		Sender:   t.senderAddr,
