@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,7 @@ const (
 	MINING_DIFFICULTY = 3
 	MINING_SENDER     = "THE Blockchain"
 	MINING_REWARD     = 1.0
+	MINING_TIMER_SEC  = 20
 )
 
 type Block struct {
@@ -28,6 +30,7 @@ type Blockchain struct {
 	chain           []*Block
 	bcAddr          string
 	port            uint16
+	mux             sync.Mutex
 }
 type Transaction struct {
 	senderAddr   string
@@ -135,12 +138,24 @@ func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 }
 
 func (bc *Blockchain) Mining() bool {
+	bc.mux.Lock()
+	defer bc.mux.Unlock()
+
+	if len(bc.transactionPool) == 0 {
+		return false
+	}
+
 	bc.AddTransaction(MINING_SENDER, bc.bcAddr, MINING_REWARD, nil, nil)
 	nonce := bc.ProofOfWork()
 	preHash := bc.LastBlock().Hash()
 	bc.CreateBlock(nonce, preHash)
 	log.Println("action-mining, status=success")
 	return true
+}
+
+func (bc *Blockchain) StartMining() {
+	bc.Mining()
+	_ = time.AfterFunc(time.Second*MINING_TIMER_SEC, bc.StartMining)
 }
 
 func (bc *Blockchain) ValidProof(nonce int, preHash [32]byte, transactions []*Transaction, difficulty int) bool {
