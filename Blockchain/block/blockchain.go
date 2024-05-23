@@ -44,6 +44,9 @@ type TransactionRequest struct {
 	Value                     *float32 `json:"value"`
 	Signature                 *string  `json:"signature"`
 }
+type AmountResponse struct {
+	Amount float32 `json:"amount"`
+}
 
 func NewBlock(nonce int, preHash [32]byte, transactions []*Transaction) *Block {
 	b := new(Block)
@@ -232,6 +235,13 @@ func (bc *Blockchain) MarshalJSON() ([]byte, error) {
 		Blocks []*Block `json:"chains"`
 	}{
 		Blocks: bc.chain,
+	})
+}
+func (ar *AmountResponse) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Amount float32 `json:"amount"`
+	}{
+		Amount: ar.Amount,
 	})
 }
 
