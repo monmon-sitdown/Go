@@ -22,6 +22,12 @@
 
             // 发送交易
             $('#send_money_button').click(function() {
+                let confirm_text = 'Are you sure to send?';
+                let confirm_result = confirm(confirm_text);
+                if (confirm_result != true) {
+                    alert('Canceled');
+                    return
+                }
                 var recipientAddress = $('#receiver_blockchain_address').val();
                 var amount = $('#send_amount').val();
                 var senderprivate = $('#private_key').val();
@@ -47,12 +53,36 @@
                     contentType: 'application/json',
                     data: JSON.stringify(transactionData),
                     success: function(response) {
+                        console.info(response);
                         alert('Transaction successful: ' + response);
                     },
                     error: function(error) {
+                        console.info(response);
                         alert('Transaction failed: ' + error.responseText);
                     }
                 });
+            });
+
+            function reload_amount() {
+                let data = {'blockchain_address': $('#blockchain_address').val()}
+                console.log('Sending request with data', data)
+                $.ajax({
+                    url:'./wallet/amount',
+                    type:'GET',
+                    data:data,
+                    success:function(response) {
+                        console.log('Received response:', response);
+                        let amount = response['amount'];
+                        $('#wallet_amount').text(amount);
+                        console.info('Updated amount:', amount);
+                    },
+                    error:function(error) {
+                        console.error(error)
+                    }
+                })
+            }
+            $('#reload_wallet').click(function(){
+                reload_amount()
             });
         })
     </script>
